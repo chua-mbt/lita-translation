@@ -36,8 +36,8 @@ Microsoft uses ISO-639 codes to identify languages. Klingon is available.
 
 * languages - List language codes supported by Microsoft's Translator API
 * determine '[text]' - Determine language of the given text
-* translate '[text]' to [code] (from [code]) - Translate the given text from one language to another
-* translate me to [code] (from [code]) - Begin auto-translating all user's speech to the given language
+* translate '[text]' to \[code\] (from [code]) - Translate the given text from one language to another
+* translate me to \[code\] (from [code]) - Begin auto-translating all user's speech to the given language
 * stop translating me - End any auto-translation
 
 Source language is optional during translation. Microsoft will attempt to detect the source language if none is supplied.
