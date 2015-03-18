@@ -12,10 +12,10 @@ en:
           translate:
             usage: "translate '[text]' to [code] (from [code])"
             description: "Translate the given text from one language to another"
-          translate_me_start:
-            usage: "translate me to [code]"
+          auto_start:
+            usage: "translate me to [code] (from [code])"
             description: "Begin auto-translating all user's speech to the given language"
-          translate_me_end:
+          auto_end:
             usage: "stop translating me"
             description: "End any auto-translation"
         replies:
@@ -27,3 +27,6 @@ en:
           determine: "Language code: %{code}"
           translate: "Translation: %{translated}"
           failure: "API Failure: "
+          auto_start: "Beginning translation to %{code} for %{user}."
+          auto: "%{user}: %{translated}."
+          auto_end: "Ceasing translation for %{user}."
