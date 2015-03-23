@@ -25,7 +25,7 @@ en:
             fail: "Could not get an access token!"
           languages: "The following languages are supported: "
           determine: "Language: %{name}(%{code})"
-          translate: "Translation in %{name}(%{code}: %{translated}"
+          translate: "Translation in %{name}(%{code}): %{translated}"
           failure: "API Failure: "
           auto_start: "Beginning translation to %{name}(%{code}) for %{user}."
           auto: "%{user}: %{translated}."
