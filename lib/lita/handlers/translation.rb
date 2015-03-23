@@ -11,7 +11,7 @@ module Lita
         codes.split(",").zip(names.split(",")).each { |pair|
           languages[pair[0]] = pair[1]
         }
-        redis.set("languages", languages)
+        redis.set("languages", languages.to_json)
         languages
       end
 
@@ -89,7 +89,10 @@ module Lita
           result = translator.detect(response.matches.pop[0])
           if result.success
             code = result.message
-            response.reply(t("replies.determine", code: code))
+            code[0] = ''
+            code = code[0..-2]
+            name = JSON.parse(redis.get("languages"))[code]
+            response.reply(t("replies.determine", code: code, name: name))
           else
             response.reply(t("replies.failure"))
             response.reply(result.message)
@@ -105,9 +108,13 @@ module Lita
         if tokenAvailable?(response, translator)
           to = response.matches.flatten[0]
           from = response.matches.flatten[2]
+          name = JSON.parse(redis.get("languages"))[to]
+          if name.nil?
+            response.reply(t("replies.unknown_code", code: to))
+          end
           redis.set(response.user.id+":to", to)
           redis.set(response.user.id+":from", from)
-          response.reply(t("replies.auto_start", code: to, user: response.user.name))
+          response.reply(t("replies.auto_start", code: to, name: name, user: response.user.name))
         end
       end
 
@@ -129,9 +136,10 @@ module Lita
           text = response.matches.flatten[0]
           to = response.matches.flatten[1]
           from = response.matches.flatten[3]
+          name = JSON.parse(redis.get("languages"))[to]
           result = translator.translate(text, to, from)
           if result.success
-            response.reply(t("replies.translate", translated: result.message))
+            response.reply(t("replies.translate", code: to, name: name, translated: result.message))
           else
             response.reply(t("replies.failure"))
             response.reply(result.message)
