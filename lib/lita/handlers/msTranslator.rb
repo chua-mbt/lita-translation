@@ -4,7 +4,8 @@ class MSTranslator
   OAUTH_URI = "https://datamarket.accesscontrol.windows.net/v2/OAuth2-13"
   API_URI = "https://api.microsofttranslator.com/V2/Ajax.svc/"
 
-  REST_LANGUAGES = "GetLanguagesForTranslate"
+  REST_LANGCODES = "GetLanguagesForTranslate"
+  REST_LANGNAMES = "GetLanguageNames"
   REST_DETECTION = "Detect"
   REST_TRANSLATE = "Translate"
 
@@ -51,9 +52,28 @@ class MSTranslator
     end
   end
 
-  def languages()
+  def languageCodes()
     result = @http.get do |req|
-      req.url API_URI+REST_LANGUAGES
+      req.url API_URI+REST_LANGCODES
+      req.headers['Authorization'] = "Bearer "+@redis.get("token")
+    end
+    if apiSuccess?(result)
+      TranslationResult.new(
+        true,
+        JSON.parse(result.body.slice(3..result.body.length)).join(",")
+      )
+    else
+      TranslationResult.new(
+        false,
+        result.body.slice(3..result.body.length)
+      )
+    end
+  end
+
+  def languageNames(codes)
+    codes = '['+codes.split(",").map { |code| '"'+code+'"' }.join(",")+']'
+    result = @http.get do |req|
+      req.url API_URI+REST_LANGNAMES, {:locale => "en", :languageCodes => codes}
       req.headers['Authorization'] = "Bearer "+@redis.get("token")
     end
     if apiSuccess?(result)

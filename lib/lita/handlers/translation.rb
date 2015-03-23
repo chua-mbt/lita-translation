@@ -6,6 +6,37 @@ module Lita
       config :client_id, type: String, required: true
       config :client_secret, type: String, required: true
 
+      def updateStoredLang(codes, names)
+        languages = {}
+        codes.split(",").zip(names.split(",")).each { |pair|
+          languages[pair[0]] = pair[1]
+        }
+        redis.set("languages", languages)
+        languages
+      end
+
+      on :connected, :init_lang
+      def init_lang(payload)
+        translator = MSTranslator.new(config.client_id, config.client_secret, http, redis)
+        if translator.staleToken?
+          translator.grabAccessToken
+        end
+
+        result = translator.languageCodes
+        if !result.success
+          return
+        end
+
+        codes = result.message
+        result = translator.languageNames(codes)
+        if !result.success
+          return
+        end
+
+        names = result.message
+        updateStoredLang(codes, names)
+      end
+
       def tokenAvailable?(response, translator)
         if translator.staleToken?
           response.reply(t("replies.access_token.attempt"))
@@ -27,13 +58,25 @@ module Lita
       def languages(response)
         translator = MSTranslator.new(config.client_id, config.client_secret, http, redis)
         if tokenAvailable?(response, translator)
-          result = translator.languages
-          if result.success
-            response.reply(t("replies.languages"))
-          else
+          codeResult = translator.languageCodes
+          if !codeResult.success
             response.reply(t("replies.failure"))
+            response.reply(codeResult.message)
+            return
           end
-          response.reply(result.message)
+
+          nameResult = translator.languageNames(codeResult.message)
+          if !nameResult.success
+            response.reply(t("replies.failure"))
+            response.reply(nameResult.message)
+            return
+          end
+
+          languages = updateStoredLang(codeResult.message, nameResult.message)
+          response.reply_privately(t("replies.languages"))
+          languages.each{ |code, name|
+            response.reply_privately("#{code}(#{name})")
+          }
         end
       end
 
@@ -54,7 +97,7 @@ module Lita
         end
       end
 
-      route /^translate me to (\w+)( from (\w+))?$/, :auto_start, help: {
+      route /^translate me to ([-\w]+)( from ([-\w]+))?$/, :auto_start, help: {
         t("help.auto_start.usage") => t("help.auto_start.description")
       }
       def auto_start(response)
@@ -77,7 +120,7 @@ module Lita
         response.reply(t("replies.auto_end", user: response.user.name))
       end
 
-      route /^translate '(.+)' to (\w+)( from (\w+))?$/, :tran_lang, help: {
+      route /^translate '(.+)' to ([-\w]+)( from ([-\w]+))?$/, :tran_lang, help: {
         t("help.translate.usage") => t("help.translate.description")
       }
       def tran_lang(response)

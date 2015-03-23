@@ -5,7 +5,7 @@ en:
         help:
           languages:
             usage: "languages"
-            description: "List language codes supported by Microsoft's Translator API"
+            description: "List languages supported by Microsoft's Translator API"
           determine:
             usage: "determine '[text]'"
             description: "Determine language of the given text"
@@ -23,7 +23,7 @@ en:
             attempt: "Requesting an access token..."
             success: "Got an access token for Microsoft's Translator API!"
             fail: "Could not get an access token!"
-          languages: "The following language codes are supported: "
+          languages: "The following languages are supported: "
           determine: "Language code: %{code}"
           translate: "Translation: %{translated}"
           failure: "API Failure: "
